@@ -46,12 +46,12 @@ public class BuscaBinariaPorCodigoComApiDeCollections {
 
     }
 
-    private int executa(List<Produto> produtos, Produto produtoASerBuscado) {
+    public int executa(List<Produto> produtos, Produto produtoASerBuscado) {
         Collections.sort(produtos);
 
         int indiceEncontrado = Collections.binarySearch(produtos, produtoASerBuscado);
         if (indiceEncontrado < 0) {
-            throw  new NoSuchElementException("O produto buscado não foi encontrado: " + produtoASerBuscado);
+            throw new NoSuchElementException("O produto buscado não foi encontrado: " + produtoASerBuscado);
         }
         return indiceEncontrado;
     }
