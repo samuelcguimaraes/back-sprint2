@@ -13,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -56,18 +57,115 @@ class EstatisticasDePagamentoServiceTest {
                 .containsEntry(StatusPagamento.CANCELADO, 1L);
     }
     
+    @Test
+    void deveConsiderarQueNaoHaNenhumPagamento() {
+    
+        Mockito.when(pagamentoDao.obtemTodos()).thenReturn(new ArrayList<>());
+        var estatisticasDePagamentoService = new EstatisticasDePagamentoService(pagamentoDao);
+    
+        EstatisticasDePagamento estatisticasDePagamento = estatisticasDePagamentoService.calcula();
+    
+        BigDecimal maiorPagamentoConfirmado = estatisticasDePagamento.getMaiorPagamentoConfirmado();
+        Assertions.assertThat(maiorPagamentoConfirmado).isEqualTo(BigDecimal.ZERO);
+    
+        Map<StatusPagamento, Long> quantidadeDePagamentoPorStatus = estatisticasDePagamento.getQuantidadeDePagamentoPorStatus();
+        Assertions.assertThat(quantidadeDePagamentoPorStatus.isEmpty()).isTrue();
+    }
+    
+    @Test
+    void deveConsiderarQuantidadeDePagamentoPorStatusSemCriado() {
+        
+        Mockito.when(pagamentoDao.obtemTodos()).thenReturn(constroiListaDePagamentosSemStatusCriado());
+        var estatisticasDePagamentoService = new EstatisticasDePagamentoService(pagamentoDao);
+        
+        EstatisticasDePagamento estatisticasDePagamento = estatisticasDePagamentoService.calcula();
+    
+        BigDecimal maiorPagamentoConfirmado = estatisticasDePagamento.getMaiorPagamentoConfirmado();
+        Assertions.assertThat(maiorPagamentoConfirmado).isEqualTo(new BigDecimal("200.00"));
+        
+        Map<StatusPagamento, Long> quantidadeDePagamentoPorStatus = estatisticasDePagamento.getQuantidadeDePagamentoPorStatus();
+        Assertions.assertThat(quantidadeDePagamentoPorStatus)
+                  .containsEntry(StatusPagamento.CONFIRMADO, 1L)
+                  .containsEntry(StatusPagamento.CANCELADO, 1L);
+    }
+    
+    @Test
+    void deveConsiderarQuantidadeDePagamentoPorStatusSemConfirmado() {
+        
+        Mockito.when(pagamentoDao.obtemTodos()).thenReturn(constroiListaDePagamentosSemStatusConfirmado());
+        var estatisticasDePagamentoService = new EstatisticasDePagamentoService(pagamentoDao);
+        
+        EstatisticasDePagamento estatisticasDePagamento = estatisticasDePagamentoService.calcula();
+    
+        BigDecimal maiorPagamentoConfirmado = estatisticasDePagamento.getMaiorPagamentoConfirmado();
+        Assertions.assertThat(maiorPagamentoConfirmado).isEqualTo(BigDecimal.ZERO);
+        
+        Map<StatusPagamento, Long> quantidadeDePagamentoPorStatus = estatisticasDePagamento.getQuantidadeDePagamentoPorStatus();
+        Assertions.assertThat(quantidadeDePagamentoPorStatus)
+                  .containsEntry(StatusPagamento.CRIADO, 2L)
+                  .containsEntry(StatusPagamento.CANCELADO, 1L);
+    }
+    
+    @Test
+    void deveConsiderarQuantidadeDePagamentoPorStatusSemCancelado() {
+        
+        Mockito.when(pagamentoDao.obtemTodos()).thenReturn(constroiListaDePagamentosSemStatusCancelado());
+        var estatisticasDePagamentoService = new EstatisticasDePagamentoService(pagamentoDao);
+        
+        EstatisticasDePagamento estatisticasDePagamento = estatisticasDePagamentoService.calcula();
+        
+        BigDecimal maiorPagamentoConfirmado = estatisticasDePagamento.getMaiorPagamentoConfirmado();
+        Assertions.assertThat(maiorPagamentoConfirmado).isEqualTo(new BigDecimal("200.00"));
+        
+        Map<StatusPagamento, Long> quantidadeDePagamentoPorStatus = estatisticasDePagamento.getQuantidadeDePagamentoPorStatus();
+        Assertions.assertThat(quantidadeDePagamentoPorStatus)
+                  .containsEntry(StatusPagamento.CRIADO, 2L)
+                  .containsEntry(StatusPagamento.CONFIRMADO, 1L);
+    }
+    
     private List<Pagamento> constroiListaDePagamentos() {
         
         final DadosCartao dadosCartao = new DadosCartao("Fulano", "123456", YearMonth.now(), "1234");
     
-        List<Pagamento> todosOsPagamentos = Arrays.asList(
+        return Arrays.asList(
                 new Pagamento(5L, new BigDecimal("50.00"), dadosCartao, StatusPagamento.CRIADO),
                 new Pagamento(1L, new BigDecimal("200.00"), dadosCartao, StatusPagamento.CONFIRMADO),
                 new Pagamento(7L, new BigDecimal("100.00"), dadosCartao, StatusPagamento.CRIADO),
                 new Pagamento(3L, new BigDecimal("250.00"), dadosCartao, StatusPagamento.CANCELADO)
         );
+    }
     
-        return todosOsPagamentos;
+    private List<Pagamento> constroiListaDePagamentosSemStatusCriado() {
+        
+        final DadosCartao dadosCartao = new DadosCartao("Fulano", "123456", YearMonth.now(), "1234");
+    
+        return Arrays.asList(
+                new Pagamento(1L, new BigDecimal("200.00"), dadosCartao, StatusPagamento.CONFIRMADO),
+                new Pagamento(7L, new BigDecimal("100.00"), dadosCartao, StatusPagamento.CRIADO),
+                new Pagamento(3L, new BigDecimal("250.00"), dadosCartao, StatusPagamento.CANCELADO)
+        );
+    }
+    
+    private List<Pagamento> constroiListaDePagamentosSemStatusConfirmado() {
+        
+        final DadosCartao dadosCartao = new DadosCartao("Fulano", "123456", YearMonth.now(), "1234");
+    
+        return Arrays.asList(
+                new Pagamento(5L, new BigDecimal("50.00"), dadosCartao, StatusPagamento.CRIADO),
+                new Pagamento(7L, new BigDecimal("100.00"), dadosCartao, StatusPagamento.CRIADO),
+                new Pagamento(3L, new BigDecimal("250.00"), dadosCartao, StatusPagamento.CANCELADO)
+        );
+    }
+    
+    private List<Pagamento> constroiListaDePagamentosSemStatusCancelado() {
+        
+        final DadosCartao dadosCartao = new DadosCartao("Fulano", "123456", YearMonth.now(), "1234");
+    
+        return Arrays.asList(
+                new Pagamento(5L, new BigDecimal("50.00"), dadosCartao, StatusPagamento.CRIADO),
+                new Pagamento(1L, new BigDecimal("200.00"), dadosCartao, StatusPagamento.CONFIRMADO),
+                new Pagamento(7L, new BigDecimal("100.00"), dadosCartao, StatusPagamento.CRIADO)
+        );
     }
 
 }
