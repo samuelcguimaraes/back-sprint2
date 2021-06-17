@@ -19,24 +19,25 @@ class FiltroDeProdutosPorCorTest {
 	@BeforeEach
 	void setUp() {
 		filtroDeProdutosPorCor = new FiltroDeProdutosPorCor();
-		//produtos = ListaDeProdutos.lista();
 		produtos = constroiListaDeProdutos();
 	}
 	
 	@Test
-	void deveriaFiltrarUnicoProdutoVerdeExistenteNaLista() {
+	void deveriaFiltrarUnicoProdutoExistenteNaLista() {
 		
 		final List<Produto> produtosFiltrados = filtroDeProdutosPorCor.filtraProdutos(this.produtos, Cor.VERDE);
 		
 		assertEquals(1, produtosFiltrados.size());
+		assertEquals(Cor.VERDE, produtosFiltrados.get(0).getCor());
 	}
 	
 	@Test
-	void deveriaFiltrarOsTresProdutosPretosExistentesNaLista() {
+	void deveriaFiltrarOsTresProdutosExistentesNaLista() {
 		
 		final List<Produto> produtosFiltrados = filtroDeProdutosPorCor.filtraProdutos(this.produtos, Cor.PRETA);
 		
 		assertEquals(3, produtosFiltrados.size());
+		assertTrue(produtosFiltrados.stream().allMatch(produto -> Cor.PRETA.equals(produto.getCor())));
 	}
 	
 	@Test
