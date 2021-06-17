@@ -14,12 +14,22 @@ public class RelatorioDePagamentos {
         var estatisticasDePagamentoService = new EstatisticasDePagamentoService(pagamentoDao);
 
         EstatisticasDePagamento estatisticas = estatisticasDePagamentoService.calcula();
-
+    
         System.out.println("Maior pagamento confirmado: " + estatisticas.getMaiorPagamentoConfirmado());
         Map<StatusPagamento, Long> quantidadeDePagamentoPorStatus = estatisticas.getQuantidadeDePagamentoPorStatus();
         for (StatusPagamento statusPagamento : quantidadeDePagamentoPorStatus.keySet()) {
             System.out.println("Quantidade de pagamentos com status '" + statusPagamento + "':  " + quantidadeDePagamentoPorStatus.get(statusPagamento));
         }
+        System.out.println();
+        
+        estatisticas = estatisticasDePagamentoService.calculaRefatorado();
+    
+        System.out.println("Maior pagamento confirmado: " + estatisticas.getMaiorPagamentoConfirmado());
+        quantidadeDePagamentoPorStatus = estatisticas.getQuantidadeDePagamentoPorStatus();
+        for (StatusPagamento statusPagamento : quantidadeDePagamentoPorStatus.keySet()) {
+            System.out.println("Quantidade de pagamentos com status '" + statusPagamento + "':  " + quantidadeDePagamentoPorStatus.get(statusPagamento));
+        }
+    
     }
 
 }

@@ -31,4 +31,10 @@ public class EstatisticasDePagamentoService {
 
         return new EstatisticasDePagamento(maiorPagamentoConfirmado ,quantidadeDePagamentoPorStatus);
     }
+
+    public EstatisticasDePagamento calculaRefatorado() {
+    
+        return new EstatisticasDePagamento(pagamentoDao.obtemMaiorPagamentoConfirmado() ,
+                                           pagamentoDao.obtemQuantidadeDePagamentoPorStatus());
+    }
 }
